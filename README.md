@@ -5,6 +5,13 @@ This repo contains a Datadog agent check to monitor [FreeRADIUS](https://freerad
 
 ## Installation
 
+Prerequisites:
+
+* A working installation of FreeRADIUS.
+* `radclient` installed on the server that will be running the custom check. (On Ubuntu, at least, this is installed with the FreeRADIUS server.)
+
+To install:
+
 1. [Configure a status server](https://wiki.freeradius.org/config/Status) on your FreeRADIUS installation.
 1. Configure the Datadog Agent to collect stats (assuming the agent is already installed):
     1. Copy `freeradius.py` to `/etc/datadog-agent/checks.d/`.
