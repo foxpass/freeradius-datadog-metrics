@@ -7,14 +7,6 @@ from checks import AgentCheck
 
 DEFAULT_TIMEOUT = 1
 
-STATISTICS_TYPES = {
-    'authentication': 1,
-    'accounting': 2,
-    'proxy_authentication': 4,
-    'proxy_accounting': 8
-}
-
-
 class TimeoutException(Exception):
     pass
 
@@ -36,6 +28,13 @@ class FreeradiusCheck(AgentCheck):
     # (public GitHub repo without a license)
     REGEXP = re.compile('(FreeRADIUS-Total-.*) = (\d*)')
 
+    STATISTICS_TYPES = {
+        'authentication': 1,
+        'accounting': 2,
+        'proxy_authentication': 4,
+        'proxy_accounting': 8
+    }
+
     def check(self, instance):
         # Check for required config parameters
         if 'host' not in instance:
@@ -52,7 +51,7 @@ class FreeradiusCheck(AgentCheck):
         self.tags = ["host:{}".format(self.host), "port:{}".format(self.port)]
 
         aggregation_inputs = "/".join([self.host, str(self.port)])
-        self.aggregation_key = md5(aggregation_inputs).hexdigest()
+        self.aggregation_key = md5(str(aggregation_inputs).encode('utf-8')).hexdigest()
 
         try:
             statistics_type = instance.get('type')
@@ -102,12 +101,13 @@ class FreeradiusCheck(AgentCheck):
         params = {"Message-Authenticator": "0x00",
                   "FreeRADIUS-Statistics-Type": statistics_type,
                   "Response-Packet-Type": "Access-Accept"}
-        input = ", ".join(["{} = {}".format(k, v) for (k, v) in params.items()])
+        input = ", ".join(["{} = {}".format(k, v) for (k, v) in params.items()]).encode("utf-8")
 
         proc = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         start_time = time.time()
         stdoutdata, stderrdata = proc.communicate(input=input)
         end_time = time.time()
+        stdoutdata = stdoutdata.decode("utf-8")
 
         if "radclient: no response from server" in stdoutdata:
             raise TimeoutException()
