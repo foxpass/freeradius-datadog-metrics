@@ -52,7 +52,7 @@ class FreeradiusCheck(AgentCheck):
         self.tags = ["host:{}".format(self.host), "port:{}".format(self.port)]
 
         aggregation_inputs = "/".join([self.host, str(self.port)])
-        self.aggregation_key = md5(aggregation_inputs).hexdigest()
+        self.aggregation_key = md5(str(aggregation_inputs).encode('utf-8')).hexdigest()
 
         try:
             statistics_type = instance.get('type')
