@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - docker version
+      - curl -JLO https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64
+      - mkdir -p ~/.docker/cli-plugins
+      - mv buildx-v0.4.2.linux-amd64 ~/.docker/cli-plugins/docker-buildx
+      - chmod a+rx ~/.docker/cli-plugins/docker-buildx
+      - docker run --privileged --rm tonistiigi/binfmt --install amd64,arm64
+  pre_build:
+    commands:
+      - git submodule init
+      - git submodule update
+      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 843529240033.dkr.ecr.us-west-2.amazonaws.com
+      - git_hash=`git rev-parse --short HEAD`
+      - echo $git_hash
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker buildx create --use --name foxpass-datadog
+      - docker buildx build --push --platform=linux/amd64,linux/arm64 --build-arg GIT_COMMIT=$git_hash -t 843529240033.dkr.ecr.us-west-2.amazonaws.com/foxpass-datadog:latest .

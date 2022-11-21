@@ -3,7 +3,7 @@ import re
 from subprocess import Popen, PIPE, STDOUT
 import time
 
-from checks import AgentCheck
+from datadog_checks.base import AgentCheck
 
 DEFAULT_TIMEOUT = 1
 
