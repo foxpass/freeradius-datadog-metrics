@@ -3,7 +3,7 @@ import re
 from subprocess import Popen, PIPE, STDOUT
 import time
 
-from checks import AgentCheck
+from datadog_checks.base import AgentCheck
 
 DEFAULT_TIMEOUT = 1
 
@@ -49,6 +49,8 @@ class FreeradiusCheck(AgentCheck):
         self.secret = instance.get("secret")
         self.timeout = float(instance.get('timeout', DEFAULT_TIMEOUT))
         self.tags = ["host:{}".format(self.host), "port:{}".format(self.port)]
+        if 'tags' in instance:
+            self.tags += instance.get("tags")
 
         aggregation_inputs = "/".join([self.host, str(self.port)])
         self.aggregation_key = md5(str(aggregation_inputs).encode('utf-8')).hexdigest()
